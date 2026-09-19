@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-sat-950 text-sat-200 font-sans antialiased overflow-hidden select-none;
+  }
+
+  /* Cartographic & Telemetry Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #090d13;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #203043;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3d5978;
+  }
+}
+
+/* React Flow Dark Geospatial Overrides */
+.react-flow {
+  background-color: #090d13 !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+.react-flow__edge-path {
+  stroke: #2c4159 !important;
+  stroke-width: 1.5 !important;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke: #38bdf8 !important;
+  stroke-dasharray: 5;
+  animation: dashdraw 0.8s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 1px !important;
+  border: 1px solid #090d13 !important;
+  background-color: #6281a4 !important;
+}
+
+.react-flow__handle:hover {
+  background-color: #38bdf8 !important;
+}
+
+/* Cartographic Grid Background Utility */
+.bg-carto-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(44, 65, 89, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(44, 65, 89, 0.15) 1px, transparent 1px);
+}
+
+.bg-carto-grid-dense {
+  background-size: 16px 16px;
+  background-image: 
+    linear-gradient(to right, rgba(44, 65, 89, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(44, 65, 89, 0.25) 1px, transparent 1px);
+}
+
+/* Crosshair pattern */
+.crosshair-corner {
+  position: relative;
+}
+.crosshair-corner::before, .crosshair-corner::after {
+  content: '';
+  position: absolute;
+  background-color: rgba(56, 189, 248, 0.4);
+}
