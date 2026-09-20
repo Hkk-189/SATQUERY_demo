@@ -4,16 +4,12 @@ import type { ScenarioId, SensorModality, QueryLogEntry } from './types';
 import { Header } from './components/Header';
 import { QueryConsole } from './components/QueryPanel/QueryConsole';
 import { MapViewer } from './components/MapViewer/MapViewer';
-import { TracePanel } from './components/TracePanel/TracePanel';
 
 export const App: React.FC = () => {
   const [activeScenarioId, setActiveScenarioId] = useState<ScenarioId>('kochi-flood');
   const [queryLogs, setQueryLogs] = useState<QueryLogEntry[]>(INITIAL_QUERY_LOGS);
   const [isQueryCollapsed, setIsQueryCollapsed] = useState<boolean>(false);
-  const [isTraceOpen, setIsTraceOpen] = useState<boolean>(true);
-  const [traceLayoutMode, setTraceLayoutMode] = useState<'bottom' | 'right'>('right');
   const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
-  const [activeRunningStep, setActiveRunningStep] = useState<number | null>(null);
 
   const activeScenario = SCENARIOS[activeScenarioId] || SCENARIOS['kochi-flood'];
 
@@ -22,23 +18,6 @@ export const App: React.FC = () => {
     setActiveScenarioId(id);
     setSelectedFeatureId(null);
   }, []);
-
-  // Simulate step-by-step DAG execution
-  const runSimulation = useCallback(() => {
-    const totalSteps = activeScenario.dagNodes.length;
-    let step = 1;
-    setActiveRunningStep(1);
-
-    const interval = setInterval(() => {
-      step += 1;
-      if (step <= totalSteps) {
-        setActiveRunningStep(step);
-      } else {
-        clearInterval(interval);
-        setTimeout(() => setActiveRunningStep(null), 800);
-      }
-    }, 450);
-  }, [activeScenario]);
 
   // Handle Natural Language Query Submission
   const handleSubmitQuery = useCallback(
@@ -80,11 +59,8 @@ export const App: React.FC = () => {
       };
 
       setQueryLogs((prev) => [newEntry, ...prev]);
-
-      // Automatically trigger live execution visualization on the DAG
-      runSimulation();
     },
-    [runSimulation]
+    []
   );
 
   return (
@@ -93,12 +69,6 @@ export const App: React.FC = () => {
       <Header
         currentScenario={activeScenario}
         onSelectScenario={handleSelectScenario}
-        isTraceOpen={isTraceOpen}
-        onToggleTrace={() => setIsTraceOpen(!isTraceOpen)}
-        traceLayoutMode={traceLayoutMode}
-        onToggleTraceLayout={() =>
-          setTraceLayoutMode((prev) => (prev === 'bottom' ? 'right' : 'bottom'))
-        }
       />
 
       {/* 2. Main Workspace Layout */}
@@ -114,77 +84,13 @@ export const App: React.FC = () => {
           onToggleCollapse={() => setIsQueryCollapsed(!isQueryCollapsed)}
         />
 
-        {/* Center & Right/Bottom Regions */}
-        <div className="flex-1 flex flex-col overflow-hidden relative">
-          {/* Sub-layout: Either [Map + Right Trace] OR [Map over Bottom Trace] */}
-          {traceLayoutMode === 'right' ? (
-            <div className="flex-1 flex overflow-hidden relative">
-              {/* Center Region: Map / Imagery Viewer (Dominant) */}
-              <div className="flex-1 relative h-full">
-                <MapViewer
-                  scenario={activeScenario}
-                  selectedFeatureId={selectedFeatureId}
-                  onSelectFeature={setSelectedFeatureId}
-                />
-              </div>
-
-              {/* Right Region: Execution Trace Panel (35% width when open) */}
-              {isTraceOpen && (
-                <div className="w-[38%] lg:w-[35%] xl:w-[32%] h-full shrink-0 z-20 transition-all">
-                  <TracePanel
-                    dagNodes={activeScenario.dagNodes}
-                    layoutMode="right"
-                    onToggleLayoutMode={() => setTraceLayoutMode('bottom')}
-                    isOpen={isTraceOpen}
-                    onToggleOpen={() => setIsTraceOpen(!isTraceOpen)}
-                    onSimulateExecution={runSimulation}
-                    activeRunningStep={activeRunningStep}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col overflow-hidden relative">
-              {/* Center Region: Map / Imagery Viewer (Dominant) */}
-              <div className="flex-1 relative w-full">
-                <MapViewer
-                  scenario={activeScenario}
-                  selectedFeatureId={selectedFeatureId}
-                  onSelectFeature={setSelectedFeatureId}
-                />
-              </div>
-
-              {/* Bottom Region: Execution Trace Drawer (38% height when open) */}
-              {isTraceOpen && (
-                <div className="h-[40%] w-full shrink-0 z-20 transition-all">
-                  <TracePanel
-                    dagNodes={activeScenario.dagNodes}
-                    layoutMode="bottom"
-                    onToggleLayoutMode={() => setTraceLayoutMode('right')}
-                    isOpen={isTraceOpen}
-                    onToggleOpen={() => setIsTraceOpen(!isTraceOpen)}
-                    onSimulateExecution={runSimulation}
-                    activeRunningStep={activeRunningStep}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Minimized Trace Floating Bar if collapsed */}
-          {!isTraceOpen && (
-            <div className="absolute bottom-3 right-3 z-30">
-              <TracePanel
-                dagNodes={activeScenario.dagNodes}
-                layoutMode={traceLayoutMode}
-                onToggleLayoutMode={() =>
-                  setTraceLayoutMode((prev) => (prev === 'bottom' ? 'right' : 'bottom'))
-                }
-                isOpen={isTraceOpen}
-                onToggleOpen={() => setIsTraceOpen(true)}
-              />
-            </div>
-          )}
+        {/* Center Region: Map / Imagery Viewer (Dominant Full Workspace) */}
+        <div className="flex-1 relative h-full overflow-hidden">
+          <MapViewer
+            scenario={activeScenario}
+            selectedFeatureId={selectedFeatureId}
+            onSelectFeature={setSelectedFeatureId}
+          />
         </div>
       </div>
     </div>
